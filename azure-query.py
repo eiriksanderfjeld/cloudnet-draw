@@ -16,6 +16,7 @@ def extract_resource_group(resource_id):
 
 # Collect all VNets and their details across selected subscriptions
 def get_vnet_topology_for_selected_subscriptions(subscription_ids):
+    network_data["hubs"] = []  # Change "hub" to "hubs" to store multiple hubs
     network_data = {"hub": {}, "spokes": []}
     vnet_candidates = []
 
@@ -39,7 +40,7 @@ def get_vnet_topology_for_selected_subscriptions(subscription_ids):
                         has_vpn_gateway = hasattr(hub, "vpn_gateway") and hub.vpn_gateway is not None
                         has_firewall = hasattr(hub, "azure_firewall") and hub.azure_firewall is not None
 
-                        network_data["hub"] = {
+                        hub_info = {
                             "name": hub.name,
                             "address_space": hub.address_prefix,
                             "type": "virtual_hub",
@@ -48,7 +49,7 @@ def get_vnet_topology_for_selected_subscriptions(subscription_ids):
                             "vpn_gateway": "Yes" if has_vpn_gateway else "No",
                             "firewall": "Yes" if has_firewall else "No"
                         }
-                        break  # Assume only one hub is needed
+                        network_data["hubs"].append(hub_info)  # Append each hub to the list
                 except Exception as e:
                     print(f"Warning: Could not retrieve virtual hub details for {vwan.name} in subscription {subscription_id}. Error: {e}")
         except Exception as e:
